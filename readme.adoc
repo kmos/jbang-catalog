@@ -7,30 +7,38 @@ image:https://img.shields.io/badge/zulip-join_chat-brightgreen.svg["Chat on Zuli
 
 This repository hosts **Catalog of JBang Scripts & Templates for Debezium**, enabling an easy way to work with Debezium for change data capture (CDC) and related patterns.
 
-
-== Quick start
-
-=== Add the Jbang Catalog to your system
-
-Using **Jbang**:
-
-```bash
-jbang catalog add debezium
-```
-
-download template for **Postgres**:
-
-```bash
-jbang init -t capturing:postgres@debezium debezium.java
-```
-
 == Requirements
 
 Depending on the extension and target (JVM vs native), typical prerequisites include:
 
 - JDK 21+
-- Jbang 0.132.1
+- https://www.jbang.dev/documentation/jbang/latest/installation.html#installation-methods[Jbang 0.132.1]
 - Docker/Podman for local services
+
+
+== Quick start
+
+Add the Jbang Catalog to your system using **jbang**:
+
+```bash
+jbang catalog add debezium
+```
+
+download a template for a datasource like **postgres** with `capturing:datasource`:
+
+```bash
+jbang init -t capturing:postgres@debezium debezium.java
+```
+
+== Available templates
+
+You can find templates for the following datasources:
+
+- postgres
+- mysql
+- mongodb
+- sql server
+- mariadb
 
 == License
 
