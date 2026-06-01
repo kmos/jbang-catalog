@@ -16,11 +16,7 @@ runs:
     - uses: ./.github/actions/maven-cache
       with:
         key: ${{ inputs.maven-cache-key }}
-    - name: Build Parent
-      shell: ${{ inputs.shell }}
-      run: >
-        ./mvnw clean install -DskipITs -DskipTests -B
     - name: Build Debezium JBang CLI
       shell: ${{ inputs.shell }}
       run: >
-        ./mvnw install -B -pl :debezium-jbang -am -amd -DskipITs=false
+        ./mvnw clean install -B -pl :debezium-jbang -am -amd -DskipITs=false
