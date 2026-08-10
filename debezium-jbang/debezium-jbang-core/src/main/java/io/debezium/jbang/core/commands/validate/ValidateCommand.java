@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import io.debezium.jbang.core.DebeziumJBangMain;
 import io.debezium.jbang.core.build.config.DbzConfig;
@@ -25,7 +24,6 @@ public class ValidateCommand extends DebeziumCommand {
 
     private static final Set<String> KNOWN_SOURCES = Set.of("postgres", "mysql", "mongodb", "sqlserver", "oracle");
     private static final Set<String> KNOWN_SINKS = Set.of("kafka", "http", "pulsar", "redis");
-    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
 
     @CommandLine.Option(names = { "--config" }, description = "Path to dbz.yaml (default: ./dbz.yaml)", defaultValue = "dbz.yaml")
     String configPath;
@@ -88,7 +86,7 @@ public class ValidateCommand extends DebeziumCommand {
             if (line.stripLeading().startsWith("#")) {
                 continue;
             }
-            Matcher matcher = ENV_VAR_PATTERN.matcher(line);
+            Matcher matcher = DbzConfigLoader.getEnvVarPattern().matcher(line);
             while (matcher.find()) {
                 String varName = matcher.group(1);
                 if (System.getenv(varName) == null && reportedVars.add(varName)) {

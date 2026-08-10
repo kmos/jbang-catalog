@@ -34,7 +34,11 @@ public class DbzConfigLoader {
         return load(Path.of("dbz.yaml"));
     }
 
-    static String resolveEnvVars(String content) {
+    public static Pattern getEnvVarPattern() {
+        return ENV_VAR_PATTERN;
+    }
+
+    public static String resolveEnvVars(String content) {
         Matcher matcher = ENV_VAR_PATTERN.matcher(content);
         StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
