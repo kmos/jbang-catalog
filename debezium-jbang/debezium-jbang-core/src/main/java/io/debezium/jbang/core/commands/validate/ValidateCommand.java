@@ -9,13 +9,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.debezium.jbang.core.DebeziumJBangMain;
 import io.debezium.jbang.core.build.config.DbzConfig;
 import io.debezium.jbang.core.build.config.DbzConfigLoader;
 import io.debezium.jbang.core.commands.DebeziumCommand;
+import io.debezium.jbang.core.commands.PlatformFactory;
+import io.debezium.jbang.core.platform.catalog.dto.ComponentDescriptor;
+import io.debezium.jbang.core.platform.catalog.dto.Property;
+import io.debezium.jbang.core.platform.catalog.service.CatalogService;
 
 import picocli.CommandLine;
 
@@ -25,8 +32,18 @@ public class ValidateCommand extends DebeziumCommand {
     private static final Set<String> KNOWN_SOURCES = Set.of("postgres", "mysql", "mongodb", "sqlserver", "oracle");
     private static final Set<String> KNOWN_SINKS = Set.of("kafka", "http", "pulsar", "redis");
 
+    private static final Map<String, String> SOURCE_TYPE_TO_CLASS = Map.of(
+            "postgres", "io.debezium.connector.postgresql.PostgresConnector",
+            "mysql", "io.debezium.connector.mysql.MySqlConnector",
+            "mongodb", "io.debezium.connector.mongodb.MongoDbConnector",
+            "sqlserver", "io.debezium.connector.sqlserver.SqlServerConnector",
+            "oracle", "io.debezium.connector.oracle.OracleConnector");
+
     @CommandLine.Option(names = { "--config" }, description = "Path to dbz.yaml (default: ./dbz.yaml)", defaultValue = "dbz.yaml")
     String configPath;
+
+    @CommandLine.Mixin
+    PlatformFactory platformFactory;
 
     public ValidateCommand(DebeziumJBangMain main) {
         super(main);
@@ -91,6 +108,32 @@ public class ValidateCommand extends DebeziumCommand {
                 String varName = matcher.group(1);
                 if (System.getenv(varName) == null && reportedVars.add(varName)) {
                     errors.add("env: referenced variable ${" + varName + "} is not set in the shell environment");
+                }
+            }
+        }
+
+        // Catalog-based connector config validation (requires conductor to be running)
+        if (errors.isEmpty() && config.source() != null && config.source().type() != null) {
+            String connectorClass = SOURCE_TYPE_TO_CLASS.get(config.source().type().toLowerCase());
+            if (connectorClass != null) {
+                try {
+                    CatalogService catalogService = platformFactory.catalog();
+                    String json = catalogService.getComponentDescriptor("source-connector", connectorClass);
+                    ObjectMapper mapper = new ObjectMapper();
+                    ComponentDescriptor descriptor = mapper.readValue(json, ComponentDescriptor.class);
+                    Map<String, Object> sourceConfig = config.source().config() != null ? config.source().config() : Map.of();
+                    if (descriptor.properties() != null) {
+                        for (Property p : descriptor.properties()) {
+                            if (Boolean.TRUE.equals(p.required()) && !sourceConfig.containsKey(p.name())) {
+                                String label = p.display() != null && p.display().label() != null ? p.display().label() : p.name();
+                                errors.add("source.config." + p.name() + ": required field '" + label + "' is missing");
+                            }
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    println("Warning: Could not reach the conductor for connector config validation: " + e.getMessage());
+                    println("  Start the conductor and re-run 'debezium validate' for full config validation.");
                 }
             }
         }
