@@ -7,13 +7,17 @@ package io.debezium.jbang.core.platform.catalog.service;
 
 import java.net.URI;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.debezium.jbang.core.platform.catalog.api.CatalogAPI;
+import io.debezium.jbang.core.platform.catalog.dto.ComponentDescriptor;
 import io.quarkus.rest.client.reactive.QuarkusRestClientBuilder;
 import io.vertx.core.http.HttpClientOptions;
 
 public class HttpCatalogService implements CatalogService {
 
     private final CatalogAPI catalogAPI;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public HttpCatalogService(URI platformAddress) {
         this.catalogAPI = QuarkusRestClientBuilder.newBuilder()
@@ -28,7 +32,13 @@ public class HttpCatalogService implements CatalogService {
     }
 
     @Override
-    public String getComponentDescriptor(String type, String componentClass) {
-        return catalogAPI.getComponentDescriptor(type, componentClass);
+    public ComponentDescriptor getComponentDescriptor(String type, String componentClass) {
+        try {
+            String json = catalogAPI.getComponentDescriptor(type, componentClass);
+            return objectMapper.readValue(json, ComponentDescriptor.class);
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Failed to parse component descriptor for " + componentClass, e);
+        }
     }
 }

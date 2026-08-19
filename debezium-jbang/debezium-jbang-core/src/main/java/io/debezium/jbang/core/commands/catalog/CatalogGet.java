@@ -40,18 +40,16 @@ public class CatalogGet extends DebeziumCommand {
     @Override
     public Integer doCall() throws Exception {
         CatalogService catalogService = platformFactory.catalog();
-        String json = catalogService.getComponentDescriptor(type, componentClass);
+        ComponentDescriptor descriptor = catalogService.getComponentDescriptor(type, componentClass);
         if ("json".equalsIgnoreCase(format)) {
-            println(json);
+            println(new ObjectMapper().writeValueAsString(descriptor));
             return 0;
         }
-        printTable(json);
+        printTable(descriptor);
         return 0;
     }
 
-    private void printTable(String json) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        ComponentDescriptor descriptor = mapper.readValue(json, ComponentDescriptor.class);
+    private void printTable(ComponentDescriptor descriptor) throws Exception {
 
         printf("Name:    %s%n", descriptor.name());
         printf("Type:    %s%n", descriptor.type());

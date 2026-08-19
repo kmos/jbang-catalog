@@ -14,11 +14,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record Property(
-        @JsonProperty("name") String name,
+public record Validation(
         @JsonProperty("type") String type,
-        @JsonProperty("required") Boolean required,
-        @JsonProperty("default") String defaultValue,
-        @JsonProperty("display") Display display,
-        @JsonProperty("validation") List<Validation> validation) {
+        @JsonProperty("values") List<String> values) {
 }

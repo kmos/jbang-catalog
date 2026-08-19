@@ -5,9 +5,11 @@
  */
 package io.debezium.jbang.core.platform.catalog.service;
 
+import io.debezium.jbang.core.platform.catalog.dto.ComponentDescriptor;
+
 public interface CatalogService {
 
     String getCatalog(String type);
 
-    String getComponentDescriptor(String type, String componentClass);
+    ComponentDescriptor getComponentDescriptor(String type, String componentClass);
 }
