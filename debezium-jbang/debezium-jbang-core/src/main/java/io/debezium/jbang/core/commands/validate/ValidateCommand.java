@@ -125,7 +125,7 @@ public class ValidateCommand extends DebeziumCommand {
                             if (Boolean.TRUE.equals(p.required()) && !sourceConfig.containsKey(p.name())) {
                                 errors.add("source.config." + p.name() + ": required field '" + label + "' is missing");
                             }
-                            else if (p.validation() != null && sourceConfig.containsKey(p.name())) {
+                            if (p.validation() != null && sourceConfig.containsKey(p.name())) {
                                 String userValue = String.valueOf(sourceConfig.get(p.name()));
                                 for (Validation v : p.validation()) {
                                     if ("enum".equals(v.type()) && v.values() != null && !v.values().contains(userValue)) {
