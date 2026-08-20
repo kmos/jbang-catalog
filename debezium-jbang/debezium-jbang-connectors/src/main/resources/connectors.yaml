@@ -1,0 +1,11 @@
+connectors:
+  - name: postgres
+    class: "io.debezium.connector.postgresql.PostgresConnector"
+  - name: mysql
+    class: "io.debezium.connector.mysql.MySqlConnector"
+  - name: mongodb
+    class: "io.debezium.connector.mongodb.MongoDbConnector"
+  - name: sqlserver
+    class: "io.debezium.connector.sqlserver.SqlServerConnector"
+  - name: oracle
+    class: "io.debezium.connector.oracle.OracleConnector"

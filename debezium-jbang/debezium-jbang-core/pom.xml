@@ -20,6 +20,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.debezium.jbang</groupId>
+            <artifactId>debezium-jbang-connectors</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-picocli</artifactId>
         </dependency>

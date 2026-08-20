@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import io.debezium.jbang.connectors.ConnectorRegistry;
 import io.debezium.jbang.core.DebeziumJBangMain;
 import io.debezium.jbang.core.build.config.DbzConfig;
 import io.debezium.jbang.core.build.config.DbzConfigLoader;
@@ -20,7 +21,6 @@ import io.debezium.jbang.core.commands.DebeziumCommand;
 import io.debezium.jbang.core.commands.PlatformFactory;
 import io.debezium.jbang.core.platform.catalog.dto.ComponentDescriptor;
 import io.debezium.jbang.core.platform.catalog.dto.Property;
-import io.debezium.jbang.core.platform.catalog.dto.Validation;
 import io.debezium.jbang.core.platform.catalog.service.CatalogService;
 
 import picocli.CommandLine;
@@ -31,12 +31,7 @@ public class ValidateCommand extends DebeziumCommand {
     private static final Set<String> KNOWN_SOURCES = Set.of("postgres", "mysql", "mongodb", "sqlserver", "oracle");
     private static final Set<String> KNOWN_SINKS = Set.of("kafka", "http", "pulsar", "redis");
 
-    private static final Map<String, String> SOURCE_TYPE_TO_CLASS = Map.of(
-            "postgres", "io.debezium.connector.postgresql.PostgresConnector",
-            "mysql", "io.debezium.connector.mysql.MySqlConnector",
-            "mongodb", "io.debezium.connector.mongodb.MongoDbConnector",
-            "sqlserver", "io.debezium.connector.sqlserver.SqlServerConnector",
-            "oracle", "io.debezium.connector.oracle.OracleConnector");
+    private static final Map<String, String> SOURCE_TYPE_TO_CLASS = ConnectorRegistry.load();
 
     @CommandLine.Option(names = { "--config" }, description = "Path to dbz.yaml (default: ./dbz.yaml)", defaultValue = "dbz.yaml")
     String configPath;
@@ -119,21 +114,12 @@ public class ValidateCommand extends DebeziumCommand {
                     CatalogService catalogService = platformFactory.catalog();
                     ComponentDescriptor descriptor = catalogService.getComponentDescriptor("source-connector", connectorClass);
                     Map<String, Object> sourceConfig = config.source().config() != null ? config.source().config() : Map.of();
+                    PropertyValidator validator = new CompositePropertyValidator(
+                            new RequiredFieldValidator(),
+                            new EnumValueValidator());
                     if (descriptor.properties() != null) {
                         for (Property p : descriptor.properties()) {
-                            String label = p.display() != null && p.display().label() != null ? p.display().label() : p.name();
-                            if (Boolean.TRUE.equals(p.required()) && !sourceConfig.containsKey(p.name())) {
-                                errors.add("source.config." + p.name() + ": required field '" + label + "' is missing");
-                            }
-                            if (p.validation() != null && sourceConfig.containsKey(p.name())) {
-                                String userValue = String.valueOf(sourceConfig.get(p.name()));
-                                for (Validation v : p.validation()) {
-                                    if ("enum".equals(v.type()) && v.values() != null && !v.values().contains(userValue)) {
-                                        errors.add("source.config." + p.name() + ": invalid value '" + userValue
-                                                + "' for field '" + label + "'. Allowed: " + String.join(", ", v.values()));
-                                    }
-                                }
-                            }
+                            errors.addAll(validator.validate(p, sourceConfig));
                         }
                     }
                 }
