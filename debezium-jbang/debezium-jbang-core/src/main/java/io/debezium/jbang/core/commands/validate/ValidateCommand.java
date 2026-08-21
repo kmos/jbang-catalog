@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -32,6 +33,10 @@ public class ValidateCommand extends DebeziumCommand {
     private static final Set<String> KNOWN_SINKS = Set.of("kafka", "http", "pulsar", "redis");
 
     private static final Map<String, String> SOURCE_TYPE_TO_CLASS = ConnectorRegistry.load();
+
+    private final PropertyValidator validators = new CompositePropertyValidator(
+            new RequiredFieldValidator(),
+            new EnumValueValidator());
 
     @CommandLine.Option(names = { "--config" }, description = "Path to dbz.yaml (default: ./dbz.yaml)", defaultValue = "dbz.yaml")
     String configPath;
@@ -107,26 +112,21 @@ public class ValidateCommand extends DebeziumCommand {
         }
 
         // Catalog-based connector config validation (requires conductor to be running)
-        if (errors.isEmpty() && config.source() != null && config.source().type() != null) {
-            String connectorClass = SOURCE_TYPE_TO_CLASS.get(config.source().type().toLowerCase());
-            if (connectorClass != null) {
-                try {
-                    CatalogService catalogService = platformFactory.catalog();
-                    ComponentDescriptor descriptor = catalogService.getComponentDescriptor("source-connector", connectorClass);
-                    Map<String, Object> sourceConfig = config.source().config() != null ? config.source().config() : Map.of();
-                    PropertyValidator validator = new CompositePropertyValidator(
-                            new RequiredFieldValidator(),
-                            new EnumValueValidator());
-                    if (descriptor.properties() != null) {
-                        for (Property p : descriptor.properties()) {
-                            errors.addAll(validator.validate(p, sourceConfig));
-                        }
-                    }
+        String connectorClass = config.source() != null && config.source().type() != null
+                ? SOURCE_TYPE_TO_CLASS.get(config.source().type().toLowerCase())
+                : null;
+        if (errors.isEmpty() && connectorClass != null) {
+            try {
+                CatalogService catalogService = platformFactory.catalog();
+                ComponentDescriptor descriptor = catalogService.getComponentDescriptor("source-connector", connectorClass);
+                Map<String, Object> sourceConfig = config.source().config() != null ? config.source().config() : Map.of();
+                for (Property p : Objects.requireNonNullElse(descriptor.properties(), List.of())) {
+                    errors.addAll(validators.validate(p, sourceConfig));
                 }
-                catch (Exception e) {
-                    println("Warning: Could not reach the conductor for connector config validation: " + e.getMessage());
-                    println("  Start the conductor and re-run 'debezium validate' for full config validation.");
-                }
+            }
+            catch (Exception e) {
+                println("Warning: Could not reach the conductor for connector config validation: " + e.getMessage());
+                println("  Start the conductor and re-run 'debezium validate' for full config validation.");
             }
         }
 
