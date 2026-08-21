@@ -5,6 +5,7 @@
  */
 package io.debezium.jbang.core.build.config;
 
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -18,7 +19,8 @@ public record DbzConfig(
         String name,
         SourceConfig source,
         SinkConfig sink,
-        BuildConfig build) {
+        BuildConfig build,
+        List<String> extras) {
 
     @RegisterForReflection
     @JsonIgnoreProperties(ignoreUnknown = true)

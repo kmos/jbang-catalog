@@ -13,5 +13,4 @@
     <artifactId>debezium-jbang-inventory</artifactId>
     <packaging>jar</packaging>
 
-
 </project>

@@ -1,11 +1,91 @@
 connectors:
   - name: postgres
     class: "io.debezium.connector.postgresql.PostgresConnector"
+    artifact: "io.debezium:debezium-connector-postgres"
+    profile: "connector-postgres"
+    versions:
+      - "2.7.x"
+      - "3.0.x"
+      - "3.1.x"
+      - "3.7.x"
+    sinks:
+      - kafka
+      - http
+      - pulsar
+      - redis
   - name: mysql
     class: "io.debezium.connector.mysql.MySqlConnector"
+    artifact: "io.debezium:debezium-connector-mysql"
+    profile: "connector-mysql"
+    versions:
+      - "2.7.x"
+      - "3.0.x"
+      - "3.1.x"
+      - "3.7.x"
+    sinks:
+      - kafka
+      - http
+      - pulsar
+      - redis
   - name: mongodb
     class: "io.debezium.connector.mongodb.MongoDbConnector"
+    artifact: "io.debezium:debezium-connector-mongodb"
+    profile: "connector-mongodb"
+    versions:
+      - "2.7.x"
+      - "3.0.x"
+      - "3.1.x"
+      - "3.7.x"
+    sinks:
+      - kafka
+      - http
+      - pulsar
+      - redis
   - name: sqlserver
     class: "io.debezium.connector.sqlserver.SqlServerConnector"
+    artifact: "io.debezium:debezium-connector-sqlserver"
+    profile: "connector-sqlserver"
+    versions:
+      - "2.7.x"
+      - "3.0.x"
+      - "3.1.x"
+      - "3.7.x"
+    sinks:
+      - kafka
+      - http
+      - pulsar
+      - redis
   - name: oracle
     class: "io.debezium.connector.oracle.OracleConnector"
+    artifact: "io.debezium:debezium-connector-oracle"
+    profile: "connector-oracle"
+    versions:
+      - "2.7.x"
+      - "3.0.x"
+      - "3.1.x"
+      - "3.7.x"
+    sinks:
+      - kafka
+      - http
+      - pulsar
+      - redis
+
+sinks:
+  - name: kafka
+    artifact: "io.debezium:debezium-server-kafka"
+    profile: "sink-kafka"
+  - name: http
+    artifact: "io.debezium:debezium-server-http"
+    profile: "sink-http"
+  - name: pulsar
+    artifact: "io.debezium:debezium-server-pulsar"
+    profile: "sink-pulsar"
+  - name: redis
+    artifact: "io.debezium:debezium-server-redis"
+    profile: "sink-redis"
+
+extras:
+  - name: storage-chronicle-queue
+    profile: "storage-chronicle-queue"
+  - name: scripting
+    profile: "scripting"

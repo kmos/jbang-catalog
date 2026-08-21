@@ -16,24 +16,56 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 public class ConnectorRegistry {
 
-    private static Map<String, String> instance;
+    private static ConnectorsConfig config;
 
-    public static Map<String, String> load() {
-        if (instance == null) {
-            instance = parse();
+    private static ConnectorsConfig config() {
+        if (config == null) {
+            config = parse();
         }
-        return instance;
+        return config;
     }
 
-    private static Map<String, String> parse() {
+    public static Map<String, String> load() {
+        return config().connectors().stream()
+                .collect(Collectors.toMap(ConnectorEntry::name, ConnectorEntry::connectorClass));
+    }
+
+    public static ConnectorEntry getConnector(String name) {
+        return config().connectors().stream()
+                .filter(c -> c.name().equalsIgnoreCase(name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown connector: " + name));
+    }
+
+    public static ConnectorManifest getManifest(String name) {
+        return ConnectorManifest.from(getConnector(name));
+    }
+
+    public static SinkEntry getSink(String name) {
+        return config().sinks().stream()
+                .filter(s -> s.name().equalsIgnoreCase(name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown sink: " + name));
+    }
+
+    public static String getSinkArtifact(String name) {
+        return getSink(name).artifact();
+    }
+
+    public static ExtrasEntry getExtra(String name) {
+        return config().extras().stream()
+                .filter(e -> e.name().equalsIgnoreCase(name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown extra: " + name));
+    }
+
+    private static ConnectorsConfig parse() {
         try (InputStream is = ConnectorRegistry.class.getClassLoader().getResourceAsStream("connectors.yaml")) {
             if (is == null) {
                 throw new RuntimeException("connectors.yaml not found on classpath");
             }
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            ConnectorsConfig config = mapper.readValue(is, ConnectorsConfig.class);
-            return config.connectors().stream()
-                    .collect(Collectors.toMap(ConnectorEntry::name, ConnectorEntry::connectorClass));
+            return mapper.readValue(is, ConnectorsConfig.class);
         }
         catch (Exception e) {
             throw new RuntimeException("Failed to load connectors.yaml", e);
@@ -42,10 +74,27 @@ public class ConnectorRegistry {
 
     public record ConnectorEntry(
             @JsonProperty("name") String name,
-            @JsonProperty("class") String connectorClass) {
+            @JsonProperty("class") String connectorClass,
+            @JsonProperty("artifact") String artifact,
+            @JsonProperty("profile") String profile,
+            @JsonProperty("versions") List<String> versions,
+            @JsonProperty("sinks") List<String> sinks) {
+    }
+
+    public record SinkEntry(
+            @JsonProperty("name") String name,
+            @JsonProperty("artifact") String artifact,
+            @JsonProperty("profile") String profile) {
+    }
+
+    public record ExtrasEntry(
+            @JsonProperty("name") String name,
+            @JsonProperty("profile") String profile) {
     }
 
     public record ConnectorsConfig(
-            @JsonProperty("connectors") List<ConnectorEntry> connectors) {
+            @JsonProperty("connectors") List<ConnectorEntry> connectors,
+            @JsonProperty("sinks") List<SinkEntry> sinks,
+            @JsonProperty("extras") List<ExtrasEntry> extras) {
     }
 }
