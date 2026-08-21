@@ -21,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>io.debezium.jbang</groupId>
-            <artifactId>debezium-jbang-connectors</artifactId>
+            <artifactId>debezium-jbang-inventory</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
