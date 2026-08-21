@@ -120,7 +120,7 @@ public class ValidateCommand extends DebeziumCommand {
                 CatalogService catalogService = platformFactory.catalog();
                 ComponentDescriptor descriptor = catalogService.getComponentDescriptor("source-connector", connectorClass);
                 Map<String, Object> sourceConfig = config.source().config() != null ? config.source().config() : Map.of();
-                for (Property p : Objects.requireNonNullElse(descriptor.properties(), List.of())) {
+                for (Property p : Objects.requireNonNullElse(descriptor.properties(), List.<Property> of())) {
                     errors.addAll(validators.validate(p, sourceConfig));
                 }
             }
