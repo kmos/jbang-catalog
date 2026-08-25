@@ -25,13 +25,14 @@ import io.debezium.jbang.core.DebeziumJBangMain;
 import io.debezium.jbang.core.build.config.DbzConfig;
 import io.debezium.jbang.core.build.config.DbzConfigLoader;
 import io.debezium.jbang.core.commands.DebeziumCommand;
+import io.debezium.jbang.core.configuration.Configuration;
 
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "build", description = "Build a Debezium Server distribution from dbz.yaml", mixinStandardHelpOptions = true, sortOptions = false)
 public class BuildCommand extends DebeziumCommand {
 
-    private static final String BASE_IMAGE = "eclipse-temurin:21-jre";
+    private static final String DEFAULT_BASE_IMAGE = "eclipse-temurin:21-jre";
     private static final AbsoluteUnixPath APP_DIR = AbsoluteUnixPath.get("/app");
 
     @CommandLine.Option(names = { "--config" }, description = "Path to dbz.yaml (default: ./dbz.yaml)", defaultValue = "dbz.yaml")
@@ -161,9 +162,12 @@ public class BuildCommand extends DebeziumCommand {
             }
         }
 
+        String cliBaseImage = Configuration.load().getBaseImage();
+        String baseImage = cliBaseImage != null ? cliBaseImage : DEFAULT_BASE_IMAGE;
+
         Path tarOutput = Path.of("target", "debezium-server.tar");
 
-        JibContainerBuilder builder = Jib.from(BASE_IMAGE)
+        JibContainerBuilder builder = Jib.from(baseImage)
                 .addLayer(coreJars, APP_DIR.resolve("lib"))
                 .addLayer(connectorSinkJars, APP_DIR.resolve("lib"));
 

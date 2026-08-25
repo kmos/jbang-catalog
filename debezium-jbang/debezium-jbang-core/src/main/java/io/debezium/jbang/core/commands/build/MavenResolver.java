@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.debezium.jbang.core.configuration.Configuration;
+
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -30,7 +32,7 @@ import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 
 public class MavenResolver {
 
-    private static final String CENTRAL_URL = "https://repo1.maven.org/maven2/";
+    private static final String DEFAULT_CENTRAL_URL = "https://repo1.maven.org/maven2/";
 
     private final RepositorySystem system;
     private final DefaultRepositorySystemSession session;
@@ -39,8 +41,10 @@ public class MavenResolver {
     public MavenResolver() {
         this.system = newRepositorySystem();
         this.session = newSession(system);
+        String configuredUrl = Configuration.load().getMavenCentralUrl();
+        String centralUrl = configuredUrl != null ? configuredUrl : DEFAULT_CENTRAL_URL;
         this.repositories = List.of(
-                new RemoteRepository.Builder("central", "default", CENTRAL_URL).build());
+                new RemoteRepository.Builder("central", "default", centralUrl).build());
     }
 
     public List<Path> resolve(List<String> artifacts, String version) throws Exception {
@@ -78,7 +82,8 @@ public class MavenResolver {
 
     private static DefaultRepositorySystemSession newSession(RepositorySystem system) {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
-        String localRepoPath = System.getProperty("user.home") + "/.m2/repository";
+        String configuredRepo = Configuration.load().getMavenLocalRepo();
+        String localRepoPath = configuredRepo != null ? configuredRepo : System.getProperty("user.home") + "/.m2/repository";
         LocalRepository localRepo = new LocalRepository(new File(localRepoPath));
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
         return session;

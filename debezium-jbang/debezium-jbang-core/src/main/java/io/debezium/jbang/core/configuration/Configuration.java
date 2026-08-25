@@ -31,6 +31,15 @@ public class Configuration {
 
     private List<Platform> platforms;
 
+    @JsonProperty("baseImage")
+    private String baseImage;
+
+    @JsonProperty("mavenLocalRepo")
+    private String mavenLocalRepo;
+
+    @JsonProperty("mavenCentralUrl")
+    private String mavenCentralUrl;
+
     public Map<String, Environment> getEnvironments() {
         return environments;
     }
@@ -55,6 +64,30 @@ public class Configuration {
 
     public void setPlatforms(List<Platform> platforms) {
         this.platforms = platforms;
+    }
+
+    public String getBaseImage() {
+        return baseImage;
+    }
+
+    public void setBaseImage(String baseImage) {
+        this.baseImage = baseImage;
+    }
+
+    public String getMavenLocalRepo() {
+        return mavenLocalRepo;
+    }
+
+    public void setMavenLocalRepo(String mavenLocalRepo) {
+        this.mavenLocalRepo = mavenLocalRepo;
+    }
+
+    public String getMavenCentralUrl() {
+        return mavenCentralUrl;
+    }
+
+    public void setMavenCentralUrl(String mavenCentralUrl) {
+        this.mavenCentralUrl = mavenCentralUrl;
     }
 
     public static Configuration load() {
