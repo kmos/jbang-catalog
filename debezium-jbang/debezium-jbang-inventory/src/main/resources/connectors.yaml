@@ -1,7 +1,7 @@
 connectors:
   - name: postgres
     class: "io.debezium.connector.postgresql.PostgresConnector"
-    artifact: "io.debezium:debezium-server-postgres"
+    artifact: "io.debezium.quarkus:debezium-quarkus-postgres"
     profile: "connector-postgres"
     versions:
       - "2.7.x"
@@ -15,7 +15,7 @@ connectors:
       - redis
   - name: mysql
     class: "io.debezium.connector.mysql.MySqlConnector"
-    artifact: "io.debezium:debezium-server-mysql"
+    artifact: "io.debezium.quarkus:debezium-quarkus-mysql"
     profile: "connector-mysql"
     versions:
       - "2.7.x"
@@ -29,7 +29,7 @@ connectors:
       - redis
   - name: mongodb
     class: "io.debezium.connector.mongodb.MongoDbConnector"
-    artifact: "io.debezium:debezium-server-mongodb"
+    artifact: "io.debezium.quarkus:debezium-quarkus-mongodb"
     profile: "connector-mongodb"
     versions:
       - "2.7.x"
@@ -43,7 +43,7 @@ connectors:
       - redis
   - name: sqlserver
     class: "io.debezium.connector.sqlserver.SqlServerConnector"
-    artifact: "io.debezium:debezium-server-sqlserver"
+    artifact: "io.debezium.quarkus:debezium-quarkus-sqlserver"
     profile: "connector-sqlserver"
     versions:
       - "2.7.x"
@@ -57,7 +57,7 @@ connectors:
       - redis
   - name: oracle
     class: "io.debezium.connector.oracle.OracleConnector"
-    artifact: "io.debezium:debezium-server-oracle"
+    artifact: "io.debezium.quarkus:debezium-quarkus-oracle"
     profile: "connector-oracle"
     versions:
       - "2.7.x"
