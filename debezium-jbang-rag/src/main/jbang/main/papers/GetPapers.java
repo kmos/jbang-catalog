@@ -1,0 +1,37 @@
+/*
+ * Copyright Debezium Authors.
+ *
+ * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
+ */
+package main.papers;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+
+import io.quarkus.arc.Unremovable;
+
+import main.database.DocumentDatabase;
+import main.out.Console;
+import picocli.CommandLine;
+
+@Dependent
+@Unremovable
+@CommandLine.Command(name = "available", description = "Add a paper to the database")
+public class GetPapers implements Runnable {
+
+    @Inject
+    DocumentDatabase documentDatabase;
+
+    @Override
+    public void run() {
+        try {
+            documentDatabase.listPapers();
+        }
+        catch (IOException | URISyntaxException e) {
+            Console.error("Impossible to get available papers");
+        }
+    }
+}

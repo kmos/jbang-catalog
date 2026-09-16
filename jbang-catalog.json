@@ -1,0 +1,7 @@
+{
+  "aliases": {
+    "rag": {
+      "script-ref": "debezium-jbang-rag/dist/RagCLI.java"
+    }
+  }
+}
