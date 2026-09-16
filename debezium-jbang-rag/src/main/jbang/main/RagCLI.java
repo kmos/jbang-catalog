@@ -19,6 +19,7 @@
 //DEPS io.quarkiverse.langchain4j:quarkus-langchain4j-milvus
 //DEPS io.quarkiverse.langchain4j:quarkus-langchain4j-openai
 //DEPS io.smallrye:jandex:3.5.3
+//DEPS org.testcontainers:testcontainers:1.21.1
 //SOURCES RagCommands.java
 //SOURCES ai/Chat.java
 //SOURCES ai/MilvusRetrievalAugmentor.java
@@ -33,9 +34,14 @@
 //SOURCES scenario/MilvusList.java
 //SOURCES scenario/ScenarioCommand.java
 //SOURCES scenario/ScenarioInit.java
+//SOURCES docker/DockerEnvironment.java
+//SOURCES ExitCommand.java
 //FILES papers/2504.05309v1.json=data/papers/2504.05309v1.json
 //FILES papers/2609.13082.json=data/papers/2609.13082.json
 //FILES papers/2609.13118.json=data/papers/2609.13118.json
+//FILES docker/image-server/Dockerfile=docker/image-server/Dockerfile
+//FILES docker/config/config-postgres/ai-sample-data.sql=docker/config/config-postgres/ai-sample-data.sql
+//FILES docker/config/config-server/application.properties=docker/config/config-server/application.properties
 //Q:CONFIG quarkus.banner.enabled=false
 //FILES config/application.properties
 
@@ -58,6 +64,7 @@ import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
 
 import main.ai.Chat;
+import main.docker.DockerEnvironment;
 import main.health.StartupChecks;
 import main.printer.Console;
 import picocli.CommandLine;
@@ -70,6 +77,9 @@ public class RagCLI implements QuarkusApplication {
 
     @Inject
     Chat chat;
+
+    @Inject
+    DockerEnvironment dockerEnvironment;
 
     @Inject
     StartupChecks startupChecks;
@@ -90,6 +100,9 @@ public class RagCLI implements QuarkusApplication {
         RagCommands ragCommands = cdiFactory.create(RagCommands.class);
         CommandLine cmd = new CommandLine(ragCommands, cdiFactory);
 
+        Console.welcome();
+        dockerEnvironment.startAll();
+
         try (var terminal = TerminalBuilder.builder().build()) {
             LineReader reader = LineReaderBuilder.builder()
                     .terminal(terminal)
@@ -97,7 +110,6 @@ public class RagCLI implements QuarkusApplication {
                     .parser(new DefaultParser())
                     .build();
             ragCommands.setReader(reader);
-            Console.welcome();
             startupChecks.runAll();
 
             while (true) {
@@ -109,6 +121,9 @@ public class RagCLI implements QuarkusApplication {
 
                     if (line.startsWith("/")) {
                         cmd.execute(line.split("\\s+"));
+                        if (ragCommands.isExitRequested()) {
+                            break;
+                        }
                     }
                     else {
                         handleChat(chat, line);
@@ -117,13 +132,16 @@ public class RagCLI implements QuarkusApplication {
                 catch (UserInterruptException ignored) {
                 }
                 catch (EndOfFileException e) {
-                    return 0;
+                    break;
                 }
                 catch (Exception e) {
                     Console.error(e.getMessage());
                 }
             }
         }
+
+        dockerEnvironment.stopAll();
+        return 0;
     }
 
     private void handleChat(Chat chat, String query) {
@@ -146,6 +164,13 @@ public class RagCLI implements QuarkusApplication {
     }
 
     public static void main(String[] args) {
+        for (String arg : args) {
+            if (arg.startsWith("-D") && arg.contains("=")) {
+                String key = arg.substring(2, arg.indexOf('='));
+                String value = arg.substring(arg.indexOf('=') + 1);
+                System.setProperty(key, value);
+            }
+        }
         Quarkus.run(RagCLI.class, args);
     }
 }

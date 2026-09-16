@@ -7,6 +7,7 @@ package main.health;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.function.Supplier;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -23,6 +24,9 @@ import main.printer.Console;
 @Unremovable
 public class StartupChecks {
 
+    private static final int MAX_ATTEMPTS = 30;
+    private static final int INTERVAL_MS = 2000;
+
     @Inject
     DataSource dataSource;
 
@@ -31,6 +35,9 @@ public class StartupChecks {
 
     @ConfigProperty(name = "debezium.url", defaultValue = "http://localhost:8080")
     String debeziumUrl;
+
+    @ConfigProperty(name = "docker", defaultValue = "true")
+    boolean dockerEnabled;
 
     @ConfigProperty(name = "quarkus.langchain4j.openai.base-url")
     String chatModelUrl;
@@ -41,9 +48,19 @@ public class StartupChecks {
     public void runAll() {
         Console.header("Service Health Checks");
 
-        checkPostgres();
-        checkMilvus();
-        checkDebezium();
+        if (dockerEnabled) {
+            pollUntilReady("PostgreSQL", this::pingPostgres);
+            pollUntilReady("Milvus", () -> httpPing(milvusUri + "/v2/vectordb/collections/list"));
+            pollUntilReady("Debezium Server", () -> httpPing(debeziumUrl));
+        }
+        else {
+            checkService("PostgreSQL", this::pingPostgres, "Start PostgreSQL: docker compose up -d postgres");
+            checkService("Milvus", () -> httpPing(milvusUri + "/v2/vectordb/collections/list"),
+                    "Start Milvus: docker compose up -d milvus");
+            checkService("Debezium Server", () -> httpPing(debeziumUrl),
+                    "Start Debezium: docker compose up -d debezium");
+        }
+
         checkChatModel();
         checkEmbeddingModel();
 
@@ -52,31 +69,44 @@ public class StartupChecks {
         // CHECKSTYLE:ON
     }
 
-    private void checkPostgres() {
+    private void checkService(String serviceName, Supplier<Boolean> check, String fix) {
+        if (check.get()) {
+            Console.checkOk(serviceName);
+        }
+        else {
+            Console.checkFail(serviceName, fix);
+        }
+    }
+
+    private void pollUntilReady(String serviceName, Supplier<Boolean> check) {
+        var spinner = Console.spinner("Waiting for " + serviceName + "...");
+        spinner.start();
+        try {
+            for (int i = 0; i < MAX_ATTEMPTS; i++) {
+                if (check.get()) {
+                    spinner.stop();
+                    Console.checkOk(serviceName);
+                    return;
+                }
+                Thread.sleep(INTERVAL_MS);
+            }
+            spinner.stop();
+            Console.checkFail(serviceName, "Timed out waiting for " + serviceName + ". Check Docker logs.");
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            spinner.stop();
+            Console.checkFail(serviceName, "Interrupted while waiting for " + serviceName);
+        }
+    }
+
+    private boolean pingPostgres() {
         try (var conn = dataSource.getConnection()) {
             conn.createStatement().execute("SELECT 1");
-            Console.checkOk("PostgreSQL");
+            return true;
         }
         catch (Exception e) {
-            Console.checkFail("PostgreSQL", "Start PostgreSQL: docker compose up -d postgres");
-        }
-    }
-
-    private void checkMilvus() {
-        if (httpPing(milvusUri + "/v2/vectordb/collections/list")) {
-            Console.checkOk("Milvus");
-        }
-        else {
-            Console.checkFail("Milvus", "Start Milvus: docker compose up -d milvus");
-        }
-    }
-
-    private void checkDebezium() {
-        if (httpPing(debeziumUrl)) {
-            Console.checkOk("Debezium Server");
-        }
-        else {
-            Console.checkFail("Debezium Server", "Start Debezium: docker compose up -d debezium");
+            return false;
         }
     }
 
