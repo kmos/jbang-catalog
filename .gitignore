@@ -25,6 +25,7 @@ replay_pid*
 *.iws
 *.ipr
 out/
+!**/dist/out/
 
 # Eclipse
 .classpath
