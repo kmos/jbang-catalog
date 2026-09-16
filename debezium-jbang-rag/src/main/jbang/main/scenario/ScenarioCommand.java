@@ -5,7 +5,7 @@
  */
 package main.scenario;
 
-import main.out.Console;
+import main.printer.Console;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "/scenario", mixinStandardHelpOptions = true, version = "1.0", description = { "command for managing Milvus Instance" }, subcommands = {

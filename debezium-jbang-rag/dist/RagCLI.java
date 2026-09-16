@@ -25,7 +25,7 @@
 //SOURCES database/DocumentDatabase.java
 //SOURCES health/StartupChecks.java
 //SOURCES milvus/MilvusStore.java
-//SOURCES out/Console.java
+//SOURCES printer/Console.java
 //SOURCES papers/AddPaper.java
 //SOURCES papers/DeletePaper.java
 //SOURCES papers/GetPapers.java
@@ -59,7 +59,7 @@ import io.quarkus.runtime.annotations.QuarkusMain;
 
 import main.ai.Chat;
 import main.health.StartupChecks;
-import main.out.Console;
+import main.printer.Console;
 import picocli.CommandLine;
 import picocli.shell.jline3.PicocliJLineCompleter;
 

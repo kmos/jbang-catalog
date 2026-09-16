@@ -22,7 +22,7 @@ import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.quarkus.arc.Unremovable;
 
-import main.out.Console;
+import main.printer.Console;
 
 @ApplicationScoped
 @Unremovable

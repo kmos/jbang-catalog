@@ -5,7 +5,7 @@
  */
 package main.papers;
 
-import main.out.Console;
+import main.printer.Console;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "/papers", mixinStandardHelpOptions = true, version = "1.0", description = { "command for managing papers" }, subcommands = { AddPaper.class,

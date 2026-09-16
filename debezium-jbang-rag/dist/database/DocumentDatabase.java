@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.quarkus.arc.Unremovable;
 
-import main.out.Console;
+import main.printer.Console;
 
 @ApplicationScoped
 @Unremovable

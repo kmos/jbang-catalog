@@ -17,7 +17,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.quarkus.arc.Unremovable;
 
-import main.out.Console;
+import main.printer.Console;
 
 @ApplicationScoped
 @Unremovable

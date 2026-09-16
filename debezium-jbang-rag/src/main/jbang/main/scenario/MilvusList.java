@@ -11,7 +11,7 @@ import jakarta.inject.Inject;
 import io.quarkus.arc.Unremovable;
 
 import main.milvus.MilvusStore;
-import main.out.Console;
+import main.printer.Console;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "milvus", mixinStandardHelpOptions = true, subcommands = { CommandLine.HelpCommand.class }, description = "list milvus vectors")

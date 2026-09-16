@@ -11,7 +11,7 @@ import jakarta.inject.Inject;
 import io.quarkus.arc.Unremovable;
 
 import main.database.DocumentDatabase;
-import main.out.Console;
+import main.printer.Console;
 import picocli.CommandLine;
 
 @Dependent
