@@ -1,7 +1,29 @@
 {
   "aliases": {
     "rag": {
-      "script-ref": "debezium-jbang-rag/dist/RagCLI.java"
+      "script-ref": "debezium-jbang-rag/dist/RagCLI.java",
+      "sources": [
+        "debezium-jbang-rag/dist/RagCommands.java",
+        "debezium-jbang-rag/dist/ai/Chat.java",
+        "debezium-jbang-rag/dist/ai/MilvusRetrievalAugmentor.java",
+        "debezium-jbang-rag/dist/database/DocumentDatabase.java",
+        "debezium-jbang-rag/dist/health/StartupChecks.java",
+        "debezium-jbang-rag/dist/milvus/MilvusStore.java",
+        "debezium-jbang-rag/dist/out/Console.java",
+        "debezium-jbang-rag/dist/papers/AddPaper.java",
+        "debezium-jbang-rag/dist/papers/DeletePaper.java",
+        "debezium-jbang-rag/dist/papers/GetPapers.java",
+        "debezium-jbang-rag/dist/papers/PaperCommand.java",
+        "debezium-jbang-rag/dist/scenario/MilvusList.java",
+        "debezium-jbang-rag/dist/scenario/ScenarioCommand.java",
+        "debezium-jbang-rag/dist/scenario/ScenarioInit.java"
+      ],
+      "files": [
+        "debezium-jbang-rag/dist/config/application.properties",
+        "debezium-jbang-rag/dist/data/papers/2504.05309v1.json",
+        "debezium-jbang-rag/dist/data/papers/2609.13082.json",
+        "debezium-jbang-rag/dist/data/papers/2609.13118.json"
+      ]
     }
   }
 }
