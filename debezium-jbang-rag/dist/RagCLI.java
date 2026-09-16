@@ -1,5 +1,5 @@
 
-//JAVA 21+
+//JAVA 21
 //REPOS central=https://repo1.maven.org/maven2,apache-snapshot=https://repository.apache.org/content/groups/snapshots/
 //JAVA_OPTIONS -Ddebezium.jbang.quarkusVersion=3.27.5 --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/sun.misc=ALL-UNNAMED --enable-native-access=ALL-UNNAMED
 //JAVA_OPTIONS -Djava.util.logging.manager=org.jboss.logmanager.LogManager
